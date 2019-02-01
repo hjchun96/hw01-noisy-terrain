@@ -30,6 +30,10 @@ class ShaderProgram {
   unifViewProj: WebGLUniformLocation;
   unifColor: WebGLUniformLocation;
   unifPlanePos: WebGLUniformLocation;
+  unifTime: WebGLUniformLocation;
+  unifDaylight: WebGLUniformLocation;
+  unifFlowspeed: WebGLUniformLocation;
+
 
   constructor(shaders: Array<Shader>) {
     this.prog = gl.createProgram();
@@ -49,6 +53,9 @@ class ShaderProgram {
     this.unifModelInvTr = gl.getUniformLocation(this.prog, "u_ModelInvTr");
     this.unifViewProj   = gl.getUniformLocation(this.prog, "u_ViewProj");
     this.unifPlanePos   = gl.getUniformLocation(this.prog, "u_PlanePos");
+    this.unifTime = gl.getUniformLocation(this.prog, "u_Time");
+    this.unifDaylight = gl.getUniformLocation(this.prog, "u_Daylight");
+    this.unifFlowspeed = gl.getUniformLocation(this.prog, "u_Flowspeed");
   }
 
   use() {
@@ -85,6 +92,28 @@ class ShaderProgram {
       gl.uniform2fv(this.unifPlanePos, pos);
     }
   }
+
+  setTimer(time: number) {
+    this.use();
+    if (this.unifTime !== -1) {
+      gl.uniform1i(this.unifTime, time);
+    }
+  }
+
+  setDaylight(daylight: number) {
+    this.use();
+    if (this.unifDaylight !== -1) {
+      gl.uniform1i(this.unifDaylight, daylight);
+    }
+  }
+
+  setFlowspeed(flowspeed: number) {
+    this.use();
+    if (this.unifFlowspeed !== -1) {
+      gl.uniform1f(this.unifFlowspeed, flowspeed);
+    }
+  }
+
 
   draw(d: Drawable) {
     this.use();

@@ -13,10 +13,13 @@ import ShaderProgram, {Shader} from './rendering/gl/ShaderProgram';
 const controls = {
   tesselations: 5,
   'Load Scene': loadScene, // A function pointer, essentially
+  'Daylight': 'Medium',
+  'FlowSpeed': 2.5,
 };
 
 let square: Square;
 let plane : Plane;
+let plane2: Plane;
 let wPressed: boolean;
 let aPressed: boolean;
 let sPressed: boolean;
@@ -26,8 +29,12 @@ let planePos: vec2;
 function loadScene() {
   square = new Square(vec3.fromValues(0, 0, 0));
   square.create();
+  
   plane = new Plane(vec3.fromValues(0,0,0), vec2.fromValues(100,100), 20);
   plane.create();
+
+  plane2 = new Plane(vec3.fromValues(0,0,0), vec2.fromValues(100,100), 20);
+  plane2.create();
 
   wPressed = false;
   aPressed = false;
@@ -82,6 +89,8 @@ function main() {
 
   // Add controls to the gui
   const gui = new DAT.GUI();
+  gui.add(controls, 'Daylight', [ 'High', 'Medium', 'Low' ] );
+  gui.add(controls, 'FlowSpeed', 0, 10);
 
   // get canvas and webgl context
   const canvas = <HTMLCanvasElement> document.getElementById('canvas');
@@ -112,6 +121,11 @@ function main() {
     new Shader(gl.FRAGMENT_SHADER, require('./shaders/flat-frag.glsl')),
   ]);
 
+  const basePlane = new ShaderProgram([
+    new Shader(gl.VERTEX_SHADER, require('./shaders/basePlane-vert.glsl')),
+    new Shader(gl.FRAGMENT_SHADER, require('./shaders/basePlane-frag.glsl')),
+  ]);
+
   function processKeyPresses() {
     let velocity: vec2 = vec2.fromValues(0,0);
     if(wPressed) {
@@ -129,22 +143,64 @@ function main() {
     let newPos: vec2 = vec2.fromValues(0,0);
     vec2.add(newPos, velocity, planePos);
     lambert.setPlanePos(newPos);
+    basePlane.setPlanePos(newPos);
     planePos = newPos;
   }
 
+  let prevDaylight = 4;
+  let prevDaylight_type = 'Medium';
+  let prevFlowspeed = 2.5;
+  let time = 0;
+
   // This function will be called every frame
   function tick() {
+
+    let daylight = prevDaylight;
+    let flowspeed = prevFlowspeed;
     camera.update();
     stats.begin();
+    time += 1;
     gl.viewport(0, 0, window.innerWidth, window.innerHeight);
     renderer.clear();
     processKeyPresses();
+
+    if(controls.Daylight != prevDaylight_type)
+    {
+      prevDaylight_type = controls.Daylight;
+
+      switch(prevDaylight_type) {
+        case "High":
+          daylight = 6;
+          break;
+        case "Medium":
+          daylight = 4;
+          break;
+        case "Low":
+          daylight = 2;
+          break;
+      }
+
+      prevDaylight = daylight;
+    }
+
+    if(controls.FlowSpeed != prevFlowspeed) 
+    {
+      flowspeed = controls.FlowSpeed;
+      prevFlowspeed = flowspeed;
+    }
+
+
     renderer.render(camera, lambert, [
       plane,
-    ]);
+    ], time, daylight, flowspeed);
+
+    renderer.render(camera, basePlane, [
+      plane2,
+    ], time, daylight, flowspeed);
+
     renderer.render(camera, flat, [
       square,
-    ]);
+    ], time, daylight, flowspeed);
     stats.end();
 
     // Tell the browser to call `tick` again whenever it renders a new frame

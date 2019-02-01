@@ -109,7 +109,7 @@ float voronoi(float x, float y, vec2 seed){
 			vec3 rand_coord = hash3(p + coord) * vec3(r1, r1, 1.0);
 			vec2 r = coord - rem + rand_coord.xy;
 			float dist = dot(r,r);
-			float weight = pow( 1.0 - smoothstep(0.0, 2.03, sqrt(dist)), k );
+			float weight = pow(1.0 - smoothstep(0.0, 2.03, sqrt(dist)), k);
 			avg_dist += rand_coord.z * weight;
 			tot_weight += weight;
     }
@@ -124,29 +124,41 @@ float max4 (vec4 v) {
 void main()
 {
 
-  fs_Pos = vs_Pos.xyz;
   fs_Time = u_Time;
   fs_Daylight = u_Daylight;
   fs_Flowspeed = u_Flowspeed;
 
-  fs_Sine = (sin((vs_Pos.x + u_PlanePos.x) * 3.14159 * 0.1) + cos((vs_Pos.z + u_PlanePos.y) * 3.14159 * 0.1));
-
-  // Use FBM to generate noise that controls height
-  vec2 height_seed = vec2(3, 3.53);
-  vec2 height = vec2(vs_Pos.x+ u_PlanePos.x, vs_Pos.z + u_PlanePos.y)/11.0;
-
-  float randomized_height = voronoi(height.x, height.y, height_seed) * 3.0;
-
-
- 	// Introduce Light (taken from HW0)
-	vec4 lightPos = vec4(10, 18, 10, 10);
+  // Introduce Light (taken from HW0)
+	vec4 lightPos = vec4(5, 5, 5, 1);
 	mat3 invTranspose = mat3(u_ModelInvTr);
   fs_Nor = vec4(invTranspose * vec3(vs_Nor), 0);          
-  
 
-  vec4 modelposition = vec4(vs_Pos.x, pow(randomized_height, 2.0) * 2.0, vs_Pos.z, 1.0);
-  modelposition = u_Model * modelposition; 
-  fs_LightVec = lightPos - modelposition;
+  // Permute FBM and Voronoi to create trees in places where there arent waterfalls
+  vec2 height_seed = vec2(3, 3.53);
+	vec2 height = vec2(vs_Pos.x+ u_PlanePos.x, vs_Pos.z + u_PlanePos.y)/11.0;
+  float voronoi_height = voronoi(height.x, height.y, height_seed) * 3.0;
 
-  gl_Position = u_ViewProj * modelposition; 
+  float voronoi_inverse = 0.0;
+  if (voronoi_height > 0.0) {
+  	voronoi_inverse = 0.0;
+  } else {
+  	voronoi_inverse = 1.0;
+  }
+
+  float fbm_height = fbm(height.x, height.y, height_seed);
+  if (fbm_height < 1.57) {
+  	fbm_height = 0.0;
+  }
+
+	float randomized_height = fbm_height * voronoi_inverse * 15.0;
+  vec4 modelposition = vec4(vs_Pos.x, randomized_height , vs_Pos.z, 1.0);
+  fs_Pos = modelposition.xyz;
+
+  fs_LightVec = lightPos - modelposition; 
+  modelposition = u_Model * modelposition;
+  gl_Position = u_ViewProj * modelposition;
+
 }
+
+
+
