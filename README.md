@@ -17,11 +17,11 @@ It roughly represents a scene with grassy ground, trees, and waterfalls.
 
 ### Noise Functions
 
-FBM:
+Voronoi: Voronoi noise is applied in changing the height of the terrain, which is designed after a waterfall.
 
-Voronoi:
+FBM: FBM noise is applied to vary the waterfall color along the x and y direction. The color movements are time controlled such that they flow along the y axis with a speed that is a function of time.
 
-FBM + Voronoi: 
+FBM + Voronoi: Voronoi is first used with the seed same as the one used for terrain height calculation and coordintes with zero or negative heights are passed through FBM so that they have tree-like spikes. The trees are colored brown.
 
 
 ### GUI Features
@@ -35,4 +35,6 @@ References & Resources
 ----------------------
 
 * Lecture notes to get pseudocode for FBMs
-* http://www.iquilezles.org/www/articles/voronoise/voronoise.htm for reference on Voroni used as a noise function
+* http://www.iquilezles.org/www/articles/voronoilines/voronoilines.htm for reference on Voronoi implementation.
+  http://www.iquilezles.org/www/articles/voronoise/voronoise.htm for reference on Voroni used as a noise function. 
+  Hash function and constants are taken from the reference code.
