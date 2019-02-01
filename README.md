@@ -31,7 +31,7 @@ Daylight Amount: The user can select the amount of daylight the scene receives, 
 
 Low Light   				 |  Medium Light     			| High Light     		 |
 :-------------------:|:----------------------:|:-------------------:
-![](Images/Low.png)  |  ![](Images/Medium.png)|![](Images/High.png)|
+![](Images/LOW.png)  |  ![](Images/MEDIUM.png)|![](Images/HIGH.png)|
 
 
 Water Flow Speed Control: The user can change the speed the water flows from the waterfall, and the inverse of this term is multiplied to the time term that varys colors along the y axis.
